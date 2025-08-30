@@ -59,4 +59,4 @@ if [ $? -ne 0 ]; then
 fi
 
 # Run the main script
-python3.8 infer-web.py --pycmd python3.8
+python3.8 infer-web.py --index_root="./logs" --pycmd python3.8

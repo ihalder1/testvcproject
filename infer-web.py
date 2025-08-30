@@ -132,9 +132,13 @@ class ToolButton(gr.Button, gr.components.FormComponent):
 
 
 weight_root = os.getenv("weight_root")
+logger.info("weight_root: %s", weight_root)
 weight_uvr5_root = os.getenv("weight_uvr5_root")
+logger.info("weight_uvr5_root: %s", weight_uvr5_root)
 index_root = os.getenv("index_root")
+logger.info("index_root: %s", index_root)
 outside_index_root = os.getenv("outside_index_root")
+logger.info("outside_index_root: %s", outside_index_root)
 
 names = []
 for name in os.listdir(weight_root):
