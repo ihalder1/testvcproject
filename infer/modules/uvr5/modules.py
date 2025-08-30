@@ -17,6 +17,12 @@ config = Config()
 def uvr(model_name, inp_root, save_root_vocal, paths, save_root_ins, agg, format0):
     infos = []
     try:
+        logger.info("Input root: %s", inp_root)
+        logger.info("Save root vocal: %s", save_root_vocal)
+        logger.info("Save root instrumental: %s", save_root_ins)
+        logger.info("Model name: %s", model_name)
+        logger.info("Aggregation: %s", agg)
+        
         inp_root = inp_root.strip(" ").strip('"').strip("\n").strip('"').strip(" ")
         save_root_vocal = (
             save_root_vocal.strip(" ").strip('"').strip("\n").strip('"').strip(" ")

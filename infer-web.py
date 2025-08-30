@@ -131,17 +131,17 @@ class ToolButton(gr.Button, gr.components.FormComponent):
         return "button"
 
 
-weight_root = "./assets/weights"
-# weight_root = os.getenv("weight_root")
+# weight_root = "./assets/weights"
+weight_root = os.getenv("weight_root")
 logger.info("weight_root: %s", weight_root)
-weight_uvr5_root = "./assets/uvr5_weight"
-# weight_uvr5_root = os.getenv("weight_uvr5_root")
+# weight_uvr5_root = "./assets/uvr5_weights"
+weight_uvr5_root = os.getenv("weight_uvr5_root")
 logger.info("weight_uvr5_root: %s", weight_uvr5_root)
-# index_root = os.getenv("index_root")
-index_root = "./logs"
+index_root = os.getenv("index_root")
+# index_root = "./logs"
 logger.info("index_root: %s", index_root)
-# outside_index_root = os.getenv("outside_index_root")
-outside_index_root = "./logs"
+outside_index_root = os.getenv("outside_index_root")
+# outside_index_root = "./logs"
 logger.info("outside_index_root: %s", outside_index_root)
 
 
