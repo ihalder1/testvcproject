@@ -152,6 +152,7 @@ class Pipeline(object):
                     device=self.device,
                 )
             f0 = self.model_rmvpe.infer_from_audio(x, thred=0.03)
+            logger.info("RMVPE model inference completed")
 
             if "privateuseone" in str(self.device):  # clean ortruntime memory
                 del self.model_rmvpe.model
@@ -162,6 +163,7 @@ class Pipeline(object):
         # with open("test.txt","w")as f:f.write("\n".join([str(i)for i in f0.tolist()]))
         tf0 = self.sr // self.window  # 每秒f0点数
         if inp_f0 is not None:
+            logger.info("Using input F0 for replacement")
             delta_t = np.round(
                 (inp_f0[:, 0].max() - inp_f0[:, 0].min()) * tf0 + 1
             ).astype("int16")
@@ -181,6 +183,7 @@ class Pipeline(object):
         f0_mel[f0_mel <= 1] = 1
         f0_mel[f0_mel > 255] = 255
         f0_coarse = np.rint(f0_mel).astype(np.int32)
+        logger.info("F0 coarse shape: %s", f0_coarse.shape)
         return f0_coarse, f0bak  # 1-0
 
     def vc(
@@ -214,11 +217,12 @@ class Pipeline(object):
             "padding_mask": padding_mask,
             "output_layer": 9 if version == "v1" else 12,
         }
+        logger.info("Extracting features...")
         t0 = ttime()
         with torch.no_grad():
             logits = model.extract_features(**inputs)
             feats = model.final_proj(logits[0]) if version == "v1" else logits[0]
-        logger.info("1-----$$$$$$$$$$$$$$$$$$$$$$$$$$")
+        logger.info("Feature extraction completed")
         print(type(protect), protect)
         if protect < 0.5 and pitch is not None and pitchf is not None:
             feats0 = feats.clone()
@@ -233,12 +237,12 @@ class Pipeline(object):
 
             # _, I = index.search(npy, 1)
             # npy = big_npy[I.squeeze()]
-
+            logger.info("Performing FAISS search...")
             score, ix = index.search(npy, k=8)
             weight = np.square(1 / score)
             weight /= weight.sum(axis=1, keepdims=True)
             npy = np.sum(big_npy[ix] * np.expand_dims(weight, axis=2), axis=1)
-
+            logger.info("FAISS search completed")
             if self.is_half:
                 npy = npy.astype("float16")
             feats = (
@@ -247,7 +251,7 @@ class Pipeline(object):
             )
 
         feats = F.interpolate(feats.permute(0, 2, 1), scale_factor=2).permute(0, 2, 1)
-        logger.info("2-----$$$$$$$$$$$$$$$$$$$$$$$$$$")
+        logger.info("Feature interpolation completed")
         print(type(protect), protect)
         if protect < 0.5 and pitch is not None and pitchf is not None:
             feats0 = F.interpolate(feats0.permute(0, 2, 1), scale_factor=2).permute(
@@ -260,7 +264,7 @@ class Pipeline(object):
             if pitch is not None and pitchf is not None:
                 pitch = pitch[:, :p_len]
                 pitchf = pitchf[:, :p_len]
-        logger.info("1-----$$$$$$$$$$$$$$$$$$$$$$$$$$")
+        logger.info("Adjusted p_len: %s", p_len)
         print(type(protect), protect)
         if protect < 0.5 and pitch is not None and pitchf is not None:
             pitchff = pitchf.clone()
@@ -270,6 +274,7 @@ class Pipeline(object):
             feats = feats * pitchff + feats0 * (1 - pitchff)
             feats = feats.to(feats0.dtype)
         p_len = torch.tensor([p_len], device=self.device).long()
+        logger.info("Starting inference...")
         with torch.no_grad():
             hasp = pitch is not None and pitchf is not None
             arg = (feats, p_len, pitch, pitchf, sid) if hasp else (feats, p_len, sid)
@@ -278,6 +283,7 @@ class Pipeline(object):
         del feats, p_len, padding_mask
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
+        logger.info("Inference completed")
         t2 = ttime()
         times[0] += t1 - t0
         times[2] += t2 - t1

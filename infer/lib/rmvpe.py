@@ -497,12 +497,15 @@ class RMVPE:
         self.resample_kernel = {}
         self.resample_kernel = {}
         self.is_half = is_half
+        logger.info("Load rmvpe model from %s", model_path)
         if device is None:
+            logger.info("Use GPU if available")
             device = "cuda:0" if torch.cuda.is_available() else "cpu"
         self.device = device
         self.mel_extractor = MelSpectrogram(
             is_half, 128, 16000, 1024, 160, None, 30, 8000
         ).to(device)
+        logger.info("Use device: %s", device)
         if "privateuseone" in str(device):
             import onnxruntime as ort
 
@@ -513,6 +516,7 @@ class RMVPE:
             self.model = ort_session
         else:
             if str(self.device) == "cuda":
+                logger.info("Use CUDA device")
                 self.device = torch.device("cuda:0")
 
             def get_jit_model():
@@ -565,6 +569,7 @@ class RMVPE:
             self.model = self.model.to(device)
         cents_mapping = 20 * np.arange(360) + 1997.3794084376191
         self.cents_mapping = np.pad(cents_mapping, (4, 4))  # 368
+        logger.info("Cents mapping: %s", self.cents_mapping)
 
     def mel2hidden(self, mel):
         with torch.no_grad():
