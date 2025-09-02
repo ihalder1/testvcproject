@@ -834,8 +834,7 @@ with gr.Blocks(title="RVC WebUI") as app:
                     clean_button = gr.Button(i18n("卸载音色省显存"), variant="primary")
                 spk_item = gr.Slider(
                     minimum=0,
-                    #maximum=2333,
-                    maximum=12333,
+                    maximum=2333,
                     step=1,
                     label=i18n("请选择说话人id"),
                     value=0,
